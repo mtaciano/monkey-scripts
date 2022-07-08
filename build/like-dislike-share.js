@@ -4,7 +4,7 @@
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
 // @version     2.0.0
-// @downloadURL https://github.com/mtaciano/monkey-scripts/blob/main/build/like-dislike-share.js
+// @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
