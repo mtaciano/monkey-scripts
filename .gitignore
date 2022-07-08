@@ -1,0 +1,5 @@
+# npm artifacts
+node_modules/
+
+# We do not include build files here
+# that is because these files are the scripts
