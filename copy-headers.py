@@ -1,8 +1,9 @@
 #!/usr/bin/env python
+import re
 from pathlib import Path
 
 def copy_headers(src: Path, build: Path):
-    """"Copy the headers from the source file to the output files"""
+    """"Copy the headers from the source file to the output file"""
 
     for file in src.glob("**/*.ts"):
         header = ""
@@ -21,9 +22,11 @@ def copy_headers(src: Path, build: Path):
         build_file = build / file_name
         with open(build_file, "r+") as f:
             content = f.read()
-            if content.startswith("//"):
-                break
 
+            # Remove header if present
+            re.sub(r"^//.*$\n?", '', content, flags=re.MULTILINE)
+
+            # Add new header
             f.seek(0)
             f.write(header + content)
 
