@@ -8,7 +8,7 @@
     "loose": false,
     "minify": {
       "compress": {
-        "arguments": false,
+        "arguments": true,
         "arrows": true,
         "booleans": true,
         "booleans_as_integers": false,
@@ -64,7 +64,7 @@
   "module": {
     "type": "es6"
   },
-  "minify": true,
+  "minify": false,
   "sourceMaps": false,
   "isModule": false
 }
