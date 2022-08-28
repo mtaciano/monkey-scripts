@@ -18,6 +18,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "allowUnreachableCode": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true
   }
 }
