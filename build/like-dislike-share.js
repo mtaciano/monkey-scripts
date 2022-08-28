@@ -3,65 +3,91 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.1.1
+// @version     2.1.2
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
-let e, t, l, n, c;
-function i(e) {
-    return new Promise((l)=>{
+function e(e, t, n, l, i, r, c) {
+    try {
+        var o = e[r](c), u = o.value;
+    } catch (a) {
+        n(a);
+        return;
+    }
+    o.done ? t(u) : Promise.resolve(u).then(l, i);
+}
+let t, n, l, i, r = 0;
+function c(e) {
+    return new Promise((t)=>{
         let n = document.getElementById(e);
         if (n) {
-            t = !0, l(n);
+            t(n);
             return;
         }
-        let c = new MutationObserver((n)=>{
+        let l = new MutationObserver((n)=>{
             n.forEach((n)=>{
                 let i = Array.from(n.addedNodes).find((t)=>{
+                    var n;
                     let l = t;
-                    return l.parentElement?.id === e || l.id === e;
+                    return l.id === e || (null === (n = l.parentElement) || void 0 === n ? void 0 : n.id) === e;
                 });
                 if (i) {
-                    t = !1, l(i), c.disconnect();
+                    t(i), r = 0, l.disconnect();
                     return;
                 }
             });
         });
-        c.observe(document.body, {
+        l.observe(document.body, {
             childList: !0,
             subtree: !0
         });
     });
 }
-async function r(e) {
-    e.click();
-    let l = await i("close-button"), n = await i("copy-button");
-    t ? (setTimeout(()=>{
-        l.click();
-    }, 600), setTimeout(()=>{
-        n.click();
-    }, 600)) : (l.click(), n.click()), navigator.clipboard.writeText(document.getElementById("share-url").value);
+function o() {
+    return (o = function(t) {
+        return function() {
+            var n = this, l = arguments;
+            return new Promise(function(i, r) {
+                var c = t.apply(n, l);
+                function o(t) {
+                    e(c, i, r, o, u, "next", t);
+                }
+                function u(t) {
+                    e(c, i, r, o, u, "throw", t);
+                }
+                o(void 0);
+            });
+        };
+    }(function*(e) {
+        e.click();
+        let t = performance.now(), n = yield c("close-button"), l = yield c("copy-button"), i = performance.now();
+        r ? setTimeout(()=>{
+            n.click(), l.click();
+        }, r) : (r = i - t, n.click(), l.click()), navigator.clipboard.writeText(document.getElementById("share-url").value);
+    })).apply(this, arguments);
 }
-function a() {
+function u() {
     if (!/^\/watch/.test(location.pathname)) {
-        e = !1;
+        t = !1;
         return;
     }
-    e = !0;
-    let t = document.getElementsByTagName("ytd-video-primary-info-renderer");
-    if (1 == t.length) {
-        let i = t[0].getElementsByTagName("button");
-        l = i[0], n = i[1], c = i[2];
-    } else l = null, n = null, c = null;
+    t = !0;
+    let e = document.getElementsByTagName("ytd-video-primary-info-renderer");
+    if (1 == e.length) {
+        let r = e[0].getElementsByTagName("button");
+        n = r[0], l = r[1], i = r[2];
+    } else n = null, l = null, i = null;
 }
-a();
-const d = new MutationObserver(a);
-d.observe(document.documentElement, {
+u();
+const a = new MutationObserver(u);
+a.observe(document.documentElement, {
     childList: !0,
     subtree: !0
-}), addEventListener("keypress", (t)=>{
-    if (!e || "true" == t.target.getAttribute("contenteditable")) return;
-    let i = t.target.tagName.toLowerCase();
-    "input" != i && "textarea" != i && ("BracketLeft" == t.code && l ? l.click() : "BracketRight" == t.code && n ? n.click() : "Backslash" == t.code && c && r(c));
+}), addEventListener("keypress", (e)=>{
+    if (!t || "true" == e.target.getAttribute("contenteditable")) return;
+    let r = e.target.tagName.toLowerCase();
+    "input" != r && "textarea" != r && ("BracketLeft" == e.code && n ? n.click() : "BracketRight" == e.code && l ? l.click() : "Backslash" == e.code && i && function(e) {
+        return o.apply(this, arguments);
+    }(i));
 });

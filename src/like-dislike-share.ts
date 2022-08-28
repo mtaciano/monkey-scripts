@@ -3,17 +3,17 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.1.1
+// @version     2.1.2
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
 
 let onVideoPage: boolean;
-let hacky: boolean; // HACK: workaround
 let likeButton: HTMLElement | null;
 let dislikeButton: HTMLElement | null;
 let shareButton: HTMLElement | null;
+let delay = 0;
 
 // Create a promise to wait for an element
 function waitForElementById(selector: string): Promise<HTMLElement> {
@@ -21,7 +21,6 @@ function waitForElementById(selector: string): Promise<HTMLElement> {
     // Already exists
     const elem = document.getElementById(selector);
     if (elem) {
-      hacky = true; // HACK: workaround
       resolve(elem);
       return;
     }
@@ -31,19 +30,15 @@ function waitForElementById(selector: string): Promise<HTMLElement> {
       mutations.forEach((mutation) => {
         const elem = Array.from(mutation.addedNodes).find((node) => {
           const elem = node as Element;
-          // Should return _true_ if its parent is the chosen one.
+          // NOTE: Should return _true_ if its parent is the chosen one.
           // This is because while testing only the children where visible
-          // so this is a workaround
-          if (elem.parentElement?.id === selector || elem.id === selector) {
-            return true;
-          } else {
-            return false;
-          }
+          // when searching for the `copy-button`, so this is a workaround
+          return elem.id === selector || elem.parentElement?.id === selector;
         }) as HTMLElement;
 
         if (elem) {
-          hacky = false; // HACK: workaround
           resolve(elem);
+          delay = 0; // Reset delay just in case
           observer.disconnect();
           return;
         }
@@ -63,21 +58,24 @@ async function getLink(popupButton: HTMLElement) {
   popupButton.click();
 
   // Get the button to close the popup and copy the link
+  const startTime = performance.now();
   const closeButton = await waitForElementById("close-button");
   const copyButton = await waitForElementById("copy-button");
+  const endTime = performance.now();
 
-  if (hacky) {
+  if (delay) {
     // HACK: change behavior if the button already exists
     setTimeout(() => {
       closeButton.click();
-    }, 600);
-    setTimeout(() => {
       copyButton.click();
-    }, 600);
+    }, delay);
   } else {
+    delay = endTime - startTime;
     // Close the popup and create the "link copied" popup
     // BUG: for some reason if you click the close button it works once,
-    // after that it does not work anymore
+    // after that it does not work anymore, probably it's because
+    // the action of opening and closing the popup is too fast
+    // if there's no need to wait the creation of the element
     closeButton.click();
     copyButton.click();
   }
@@ -118,6 +116,7 @@ function findButtons() {
   }
 }
 
+// Call the funcion and set a observer in case the document changes
 findButtons();
 const observer = new MutationObserver(findButtons);
 observer.observe(document.documentElement, { childList: true, subtree: true });
