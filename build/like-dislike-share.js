@@ -3,61 +3,65 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.1.0
+// @version     2.1.1
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
-let e, t, n, l;
-function c(e) {
-    return new Promise((t)=>{
+let e, t, l, n, c;
+function i(e) {
+    return new Promise((l)=>{
         let n = document.getElementById(e);
         if (n) {
-            t(n);
+            t = !0, l(n);
             return;
         }
-        let l = new MutationObserver((n)=>{
+        let c = new MutationObserver((n)=>{
             n.forEach((n)=>{
-                let c = Array.from(n.addedNodes).find((t)=>{
-                    let n = t;
-                    return n.parentElement?.id === e || n.id === e;
+                let i = Array.from(n.addedNodes).find((t)=>{
+                    let l = t;
+                    return l.parentElement?.id === e || l.id === e;
                 });
-                if (c) {
-                    t(c), l.disconnect();
+                if (i) {
+                    t = !1, l(i), c.disconnect();
                     return;
                 }
             });
         });
-        l.observe(document.body, {
+        c.observe(document.body, {
             childList: !0,
             subtree: !0
         });
     });
 }
-async function i(e) {
+async function r(e) {
     e.click();
-    let t = await c("close-button"), n = await c("copy-button");
-    t.click(), n.click(), navigator.clipboard.writeText(document.getElementById("share-url").value);
+    let l = await i("close-button"), n = await i("copy-button");
+    t ? (setTimeout(()=>{
+        l.click();
+    }, 600), setTimeout(()=>{
+        n.click();
+    }, 600)) : (l.click(), n.click()), navigator.clipboard.writeText(document.getElementById("share-url").value);
 }
-function r() {
+function a() {
     if (!/^\/watch/.test(location.pathname)) {
         e = !1;
         return;
     }
     e = !0;
-    let c = document.getElementsByTagName("ytd-video-primary-info-renderer");
-    if (1 == c.length) {
-        let i = c[0].getElementsByTagName("button");
-        t = i[0], n = i[1], l = i[2];
-    } else t = null, n = null, l = null;
+    let t = document.getElementsByTagName("ytd-video-primary-info-renderer");
+    if (1 == t.length) {
+        let i = t[0].getElementsByTagName("button");
+        l = i[0], n = i[1], c = i[2];
+    } else l = null, n = null, c = null;
 }
-r();
-const a = new MutationObserver(r);
-a.observe(document.documentElement, {
+a();
+const d = new MutationObserver(a);
+d.observe(document.documentElement, {
     childList: !0,
     subtree: !0
-}), addEventListener("keypress", (c)=>{
-    if (!e || "true" == c.target.getAttribute("contenteditable")) return;
-    let r = c.target.tagName.toLowerCase();
-    "input" != r && "textarea" != r && ("BracketLeft" == c.code && t ? t.click() : "BracketRight" == c.code && n ? n.click() : "Backslash" == c.code && l && i(l));
+}), addEventListener("keypress", (t)=>{
+    if (!e || "true" == t.target.getAttribute("contenteditable")) return;
+    let i = t.target.tagName.toLowerCase();
+    "input" != i && "textarea" != i && ("BracketLeft" == t.code && l ? l.click() : "BracketRight" == t.code && n ? n.click() : "Backslash" == t.code && c && r(c));
 });

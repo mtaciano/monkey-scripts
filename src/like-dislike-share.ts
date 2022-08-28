@@ -3,13 +3,14 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.1.0
+// @version     2.1.1
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
 
 let onVideoPage: boolean;
+let hacky: boolean; // HACK: workaround
 let likeButton: HTMLElement | null;
 let dislikeButton: HTMLElement | null;
 let shareButton: HTMLElement | null;
@@ -20,6 +21,7 @@ function waitForElementById(selector: string): Promise<HTMLElement> {
     // Already exists
     const elem = document.getElementById(selector);
     if (elem) {
+      hacky = true; // HACK: workaround
       resolve(elem);
       return;
     }
@@ -40,6 +42,7 @@ function waitForElementById(selector: string): Promise<HTMLElement> {
         }) as HTMLElement;
 
         if (elem) {
+          hacky = false; // HACK: workaround
           resolve(elem);
           observer.disconnect();
           return;
@@ -63,11 +66,21 @@ async function getLink(popupButton: HTMLElement) {
   const closeButton = await waitForElementById("close-button");
   const copyButton = await waitForElementById("copy-button");
 
-  // Close the popup and create the "link copied" popup
-  // BUG: for some reason if you click the close button it works once,
-  // after that it does not work anymore
-  closeButton.click();
-  copyButton.click();
+  if (hacky) {
+    // HACK: change behavior if the button already exists
+    setTimeout(() => {
+      closeButton.click();
+    }, 600);
+    setTimeout(() => {
+      copyButton.click();
+    }, 600);
+  } else {
+    // Close the popup and create the "link copied" popup
+    // BUG: for some reason if you click the close button it works once,
+    // after that it does not work anymore
+    closeButton.click();
+    copyButton.click();
+  }
 
   // Copy to the clipboard
   navigator.clipboard.writeText(
