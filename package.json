@@ -1,6 +1,6 @@
 {
   "name": "monkey-scripts",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A collection of tamper/violent-monkey scripts.",
   "scripts": {
     "build": "tsc --noEmit && swc src -d build && ./copy-headers.py"
