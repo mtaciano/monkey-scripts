@@ -60,7 +60,9 @@ async function getLink(popupButton: HTMLElement) {
   // Get the button to close the popup and copy the link
   const startTime = performance.now();
   const closeButton = await waitForElementById("close-button");
-  const copyButton = await waitForElementById("copy-button");
+  const copyButton = await waitForElementById("copy-button").then(
+    (elem) => elem.getElementsByTagName("button")[0]
+  );
   const endTime = performance.now();
 
   if (delay) {
