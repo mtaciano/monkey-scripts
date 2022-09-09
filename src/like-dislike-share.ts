@@ -3,7 +3,7 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.1.3
+// @version     2.1.4
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
@@ -83,9 +83,8 @@ async function getLink(popupButton: HTMLElement) {
   }
 
   // Copy to the clipboard
-  navigator.clipboard.writeText(
-    (document.getElementById("share-url") as HTMLInputElement).value
-  );
+  const shareURL = document.getElementById("share-url") as HTMLInputElement;
+  navigator.clipboard.writeText(shareURL.value);
 }
 
 // Find the buttons that are needed
@@ -100,17 +99,11 @@ function findButtons() {
   const videoInfo = document.getElementsByTagName(
     "ytd-video-primary-info-renderer"
   );
-  if (videoInfo.length == 1) {
+  if (videoInfo.length === 1) {
     const buttons = videoInfo[0].getElementsByTagName("button");
     likeButton = buttons[0];
     dislikeButton = buttons[1];
     shareButton = buttons[2];
-    // NOTE: It seems that the `applaud` button was changed to `thanks`
-    // which comes after `share`, so maybe there's no more need for this check
-    // link = // Check if video has `applaud` button
-    //   buttons[2].getAttribute("aria-label") === "Share"
-    //     ? buttons[2]
-    //     : buttons[3];
   } else {
     likeButton = null;
     dislikeButton = null;
@@ -129,21 +122,23 @@ addEventListener("keypress", (event) => {
     return;
   }
 
+  const targetElement = event.target as HTMLElement;
+
   // On your userpage, return
-  if ((event.target as HTMLElement).getAttribute("contenteditable") == "true") {
+  if (targetElement.getAttribute("contenteditable") === "true") {
     return;
   }
 
-  const tag = (event.target as HTMLElement).tagName.toLowerCase();
-  if (tag == "input" || tag == "textarea") {
+  const tag = targetElement.tagName.toLowerCase();
+  if (tag === "input" || tag === "textarea") {
     return;
   }
 
-  if (event.code == "BracketLeft" && likeButton) {
+  if (event.code === "BracketLeft" && likeButton) {
     likeButton.click();
-  } else if (event.code == "BracketRight" && dislikeButton) {
+  } else if (event.code === "BracketRight" && dislikeButton) {
     dislikeButton.click();
-  } else if (event.code == "Backslash" && shareButton) {
+  } else if (event.code === "Backslash" && shareButton) {
     getLink(shareButton);
   }
 });
