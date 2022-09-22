@@ -3,94 +3,96 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.1.4
+// @version     2.2.0
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
-function e(e, t, n, r, o, i, c) {
+function e(e, t, n, o, r, l, c) {
     try {
-        var l = e[i](c), a = l.value;
+        var i = e[l](c), a = i.value;
     } catch (u) {
         n(u);
         return;
     }
-    l.done ? t(a) : Promise.resolve(a).then(r, o);
+    i.done ? t(a) : Promise.resolve(a).then(o, r);
 }
-let t, n, r, o, i = 0;
-function c(e) {
+let t, n, o, r, l = 0, c = "";
+function i(e) {
     return new Promise((t)=>{
         let n = document.getElementById(e);
         if (n) {
             t(n);
             return;
         }
-        let r = new MutationObserver((n)=>{
+        let o = new MutationObserver((n)=>{
             n.forEach((n)=>{
-                let o = Array.from(n.addedNodes).find((t)=>{
+                let r = Array.from(n.addedNodes).find((t)=>{
                     var n;
-                    let r = t;
-                    return r.id === e || (null === (n = r.parentElement) || void 0 === n ? void 0 : n.id) === e;
+                    return t.id === e || (null === (n = t.parentElement) || void 0 === n ? void 0 : n.id) === e;
                 });
-                if (o) {
-                    t(o), i = 0, r.disconnect();
+                if (r) {
+                    t(r), o.disconnect();
                     return;
                 }
             });
         });
-        r.observe(document.body, {
+        o.observe(document.body, {
             childList: !0,
             subtree: !0
         });
     });
 }
-function l() {
+function a() {
     var t;
-    return (l = (t = function*(e) {
+    return t = function*(e) {
         e.click();
-        let t = performance.now(), n = yield c("close-button"), r = yield c("copy-button").then((e)=>e.getElementsByTagName("button")[0]), o = performance.now();
-        i ? setTimeout(()=>{
-            n.click(), r.click();
-        }, i) : (i = o - t, n.click(), r.click());
-        let l = document.getElementById("share-url");
-        navigator.clipboard.writeText(l.value);
-    }, function() {
-        var n = this, r = arguments;
-        return new Promise(function(o, i) {
-            var c = t.apply(n, r);
-            function l(t) {
-                e(c, o, i, l, a, "next", t);
+        let t = performance.now(), n = yield i("close-button"), o = yield i("copy-button").then((e)=>e.getElementsByTagName("button")[0]), r = performance.now(), c = r - t;
+        l || c <= 150 ? setTimeout(()=>{
+            n.click(), o.click();
+        }, Math.max(150, l, c)) : (n.click(), o.click()), 0 === l == !0 && (l = Math.max(150, c)), console.log(l);
+        let a = document.getElementById("share-url");
+        navigator.clipboard.writeText(a.value);
+    }, (a = function() {
+        var n = this, o = arguments;
+        return new Promise(function(r, l) {
+            var c = t.apply(n, o);
+            function i(t) {
+                e(c, r, l, i, a, "next", t);
             }
             function a(t) {
-                e(c, o, i, l, a, "throw", t);
+                e(c, r, l, i, a, "throw", t);
             }
-            l(void 0);
+            i(void 0);
         });
-    })).apply(this, arguments);
+    }).apply(this, arguments);
 }
-function a() {
+function u() {
     if (!/^\/watch/.test(location.pathname)) {
         t = !1;
         return;
     }
-    t = !0;
-    let e = document.getElementsByTagName("ytd-video-primary-info-renderer");
+    c !== location.href && (console.log(c), console.log(location.href), l = 0), c = location.href, t = !0;
+    let e = document.getElementsByTagName("ytd-watch-metadata");
     if (1 === e.length) {
-        let i = e[0].getElementsByTagName("button");
-        n = i[0], r = i[1], o = i[2];
-    } else n = null, r = null, o = null;
+        let i = e[0].querySelector("div #actions");
+        if (null != i) {
+            let a = i.getElementsByTagName("button");
+            n = a[0], o = a[1], r = a[2];
+        }
+    } else n = null, o = null, r = null;
 }
-a();
-const u = new MutationObserver(a);
-u.observe(document.documentElement, {
+u();
+const d = new MutationObserver(u);
+d.observe(document.documentElement, {
     childList: !0,
     subtree: !0
 }), addEventListener("keypress", (e)=>{
     if (!t) return;
-    let i = e.target;
-    if ("true" === i.getAttribute("contenteditable")) return;
-    let c = i.tagName.toLowerCase();
-    "input" !== c && "textarea" !== c && ("BracketLeft" === e.code && n ? n.click() : "BracketRight" === e.code && r ? r.click() : "Backslash" === e.code && o && function(e) {
-        return l.apply(this, arguments);
-    }(o));
+    let l = e.target;
+    if ("true" === l.getAttribute("contenteditable")) return;
+    let c = l.tagName.toLowerCase();
+    "input" !== c && "textarea" !== c && ("BracketLeft" === e.code && n ? n.click() : "BracketRight" === e.code && o ? o.click() : "Backslash" === e.code && r && function(e) {
+        return a.apply(this, arguments);
+    }(r));
 });

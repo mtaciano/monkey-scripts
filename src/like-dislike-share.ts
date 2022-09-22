@@ -3,7 +3,7 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.1.4
+// @version     2.2.0
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
@@ -14,6 +14,7 @@ let likeButton: HTMLElement | null;
 let dislikeButton: HTMLElement | null;
 let shareButton: HTMLElement | null;
 let delay = 0;
+let url = "";
 
 // Create a promise to wait for an element
 function waitForElementById(selector: string): Promise<HTMLElement> {
@@ -38,7 +39,6 @@ function waitForElementById(selector: string): Promise<HTMLElement> {
 
         if (elem) {
           resolve(elem);
-          delay = 0; // Reset delay just in case
           observer.disconnect();
           return;
         }
@@ -65,14 +65,16 @@ async function getLink(popupButton: HTMLElement) {
   );
   const endTime = performance.now();
 
-  if (delay) {
+  let newDelay = endTime - startTime;
+
+  // TODO: Definitively overengineered, should simplify
+  if (delay || newDelay <= 150) {
     // HACK: change behavior if the button already exists
     setTimeout(() => {
       closeButton.click();
       copyButton.click();
-    }, delay);
+    }, Math.max(150, delay, newDelay));
   } else {
-    delay = endTime - startTime;
     // Close the popup and create the "link copied" popup
     // BUG: for some reason if you click the close button it works once,
     // after that it does not work anymore, probably it's because
@@ -81,6 +83,18 @@ async function getLink(popupButton: HTMLElement) {
     closeButton.click();
     copyButton.click();
   }
+
+  switch (delay === 0) {
+    case true:
+      delay = Math.max(150, newDelay);
+      break;
+
+    case false:
+      // Do nothing
+      break;
+  }
+
+  console.log(delay);
 
   // Copy to the clipboard
   const shareURL = document.getElementById("share-url") as HTMLInputElement;
@@ -94,16 +108,26 @@ function findButtons() {
     onVideoPage = false;
     return;
   }
+
+  if (url !== location.href) {
+    console.log(url);
+    console.log(location.href);
+    // Changed the video
+    delay = 0;
+  }
+
+  url = location.href;
   onVideoPage = true;
 
-  const videoInfo = document.getElementsByTagName(
-    "ytd-video-primary-info-renderer"
-  );
+  const videoInfo = document.getElementsByTagName("ytd-watch-metadata");
   if (videoInfo.length === 1) {
-    const buttons = videoInfo[0].getElementsByTagName("button");
-    likeButton = buttons[0];
-    dislikeButton = buttons[1];
-    shareButton = buttons[2];
+    const actions = videoInfo[0].querySelector("div #actions");
+    if (actions != null) {
+      const buttons = actions.getElementsByTagName("button");
+      likeButton = buttons[0];
+      dislikeButton = buttons[1];
+      shareButton = buttons[2];
+    }
   } else {
     likeButton = null;
     dislikeButton = null;
