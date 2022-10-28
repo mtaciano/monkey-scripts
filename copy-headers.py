@@ -20,6 +20,7 @@ def copy_headers(src: Path, build: Path):
         # Build the header for the .js file in the build dir
         file_name = file.stem + ".js"
         build_file = build / file_name
+
         with open(build_file, "r+") as f:
             content = f.read()
 
