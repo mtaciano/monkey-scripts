@@ -3,22 +3,22 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.2.1
+// @version     2.2.2
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
 let e, t, n, r;
-function i(e, t, n, r, i, l, o) {
+function i(e, t, n, r, i, o, l) {
     try {
-        var u = e[l](o), c = u.value;
+        var u = e[o](l), c = u.value;
     } catch (a) {
         n(a);
         return;
     }
     u.done ? t(c) : Promise.resolve(c).then(r, i);
 }
-function l(e) {
+function o(e) {
     return new Promise((t)=>{
         let n = document.getElementById(e);
         if (n) {
@@ -43,25 +43,25 @@ function l(e) {
         });
     });
 }
-function o() {
+function l() {
     var e;
     return e = function*(e) {
         e.click();
-        let t = yield l("close-button"), n = yield l("copy-button");
+        let t = yield o("close-button"), n = yield o("copy-button").then((e)=>e.getElementsByTagName("button")[0]);
         setTimeout(()=>{
             t.click(), n.click();
         }, 150);
         let r = document.getElementById("share-url");
         navigator.clipboard.writeText(r.value);
-    }, (o = function() {
+    }, (l = function() {
         var t = this, n = arguments;
-        return new Promise(function(r, l) {
-            var o = e.apply(t, n);
+        return new Promise(function(r, o) {
+            var l = e.apply(t, n);
             function u(e) {
-                i(o, r, l, u, c, "next", e);
+                i(l, r, o, u, c, "next", e);
             }
             function c(e) {
-                i(o, r, l, u, c, "throw", e);
+                i(l, r, o, u, c, "throw", e);
             }
             u(void 0);
         });
@@ -73,10 +73,10 @@ function u() {
         return;
     }
     e = !0;
-    let i = document.getElementsByTagName("ytd-menu-renderer");
-    if (i.length >= 2) {
-        let l = i[1].getElementsByTagName("button");
-        null != l && (t = l[0], n = l[1], r = l[2]);
+    let i = document.querySelector("div #actions-inner");
+    if (null !== i) {
+        let o = i.getElementsByTagName("button");
+        null != o && (t = o[0], n = o[1], r = o[2]);
     } else t = null, n = null, r = null;
 }
 u();
@@ -86,10 +86,10 @@ c.observe(document.documentElement, {
     subtree: !0
 }), addEventListener("keypress", (i)=>{
     if (!e) return;
-    let l = i.target;
-    if ("true" === l.getAttribute("contenteditable")) return;
-    let u = l.tagName.toLowerCase();
+    let o = i.target;
+    if ("true" === o.getAttribute("contenteditable")) return;
+    let u = o.tagName.toLowerCase();
     "input" !== u && "textarea" !== u && ("BracketLeft" === i.code && t ? t.click() : "BracketRight" === i.code && n ? n.click() : "Backslash" === i.code && r && function(e) {
-        return o.apply(this, arguments);
+        return l.apply(this, arguments);
     }(r));
 });

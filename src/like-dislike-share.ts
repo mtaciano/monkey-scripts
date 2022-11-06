@@ -3,7 +3,7 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.2.1
+// @version     2.2.2
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
@@ -59,7 +59,9 @@ async function getLink(popupButton: HTMLElement) {
 
   // Get the button to close the popup and copy the link
   const closeButton = await awaitElementById("close-button");
-  const copyButton = await awaitElementById("copy-button");
+  const copyButton = await awaitElementById("copy-button").then(
+    (elem) => elem.getElementsByTagName("button")[0]
+  );
 
   setTimeout(() => {
     closeButton.click();
@@ -81,9 +83,9 @@ function findButtons() {
 
   onVideoPage = true;
 
-  const videoInfo = document.getElementsByTagName("ytd-menu-renderer");
-  if (videoInfo.length >= 2) {
-    const buttons = videoInfo[1].getElementsByTagName("button");
+  const videoInfo = document.querySelector("div #actions-inner");
+  if (videoInfo !== null) {
+    const buttons = videoInfo.getElementsByTagName("button");
 
     if (buttons != null) {
       likeButton = buttons[0];
