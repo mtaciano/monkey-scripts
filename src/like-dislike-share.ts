@@ -3,19 +3,75 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     2.2.2
+// @version     3.0.0
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
 
-let onVideoPage: boolean;
-let likeButton: HTMLElement | null;
-let dislikeButton: HTMLElement | null;
-let shareButton: HTMLElement | null;
+// Buttons used for interacting with the video player
+class Buttons {
+  onVideoPage: boolean;
+  like: HTMLElement | null;
+  dislike: HTMLElement | null;
+  share: HTMLElement | null;
+
+  constructor() {
+    this.onVideoPage = false;
+    this.like = null;
+    this.dislike = null;
+    this.share = null;
+  }
+
+  setFrom(root: ParentNode) {
+    // Test if we are in a valid page
+    if (!/^\/watch/.test(location.pathname)) {
+      this.onVideoPage = false;
+    }
+
+    // We are, proceed
+    this.onVideoPage = true;
+
+    const videoInfo = root.querySelector("div #actions-inner");
+    if (videoInfo !== null) {
+      const buttons = videoInfo.getElementsByTagName("button");
+
+      if (buttons.length >= 3) {
+        this.like = buttons[0];
+        this.dislike = buttons[1];
+        this.share = buttons[2];
+      }
+    }
+  }
+
+  async getShareLink(): Promise<string> {
+      if (this.share === null) {
+        return "";
+      }
+
+      // Open popup to create the shareable link
+      this.share.click();
+
+      // Get the button to close the popup and copy the link
+      const close = await awaitElementById("close-button");
+      const copy = await awaitElementById("copy-button").then(
+        (elem) => elem.getElementsByTagName("button")[0]
+      );
+
+      // Force the link generation
+      setTimeout(() => {
+        copy.click();
+        close.click();
+      }, 150);
+
+      // Return the link value
+      const url = document.getElementById("share-url") as HTMLInputElement;
+      return url.value;
+  }
+}
 
 // Create a promise to wait for an element
-function awaitElementById(selector: string): Promise<HTMLElement> {
+async function awaitElementById(selector: string): Promise<HTMLElement> {
   return new Promise((resolve) => {
     const elem = document.getElementById(selector);
 
@@ -52,81 +108,47 @@ function awaitElementById(selector: string): Promise<HTMLElement> {
   });
 }
 
-// Get the link of the video
-async function getLink(popupButton: HTMLElement) {
-  // Open popup to create the shareable link
-  popupButton.click();
+// Main IIFE
+(function () {
+  let buttons = new Buttons();
 
-  // Get the button to close the popup and copy the link
-  const closeButton = await awaitElementById("close-button");
-  const copyButton = await awaitElementById("copy-button").then(
-    (elem) => elem.getElementsByTagName("button")[0]
-  );
+  // Set the buttons and create an observer in case the document changes
+  buttons.setFrom(document);
+  const button_observer = new MutationObserver((_) => {
+    // Try to set the buttons everytime a change occurs
+    buttons.setFrom(document);
+  });
+  button_observer.observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+  });
 
-  setTimeout(() => {
-    closeButton.click();
-    copyButton.click();
-  }, 150);
-
-  // Copy to the clipboard
-  const shareURL = document.getElementById("share-url") as HTMLInputElement;
-  navigator.clipboard.writeText(shareURL.value);
-}
-
-// Find the buttons that are needed
-function findButtons() {
-  // Test if we are in a valid page
-  if (!/^\/watch/.test(location.pathname)) {
-    onVideoPage = false;
-    return;
-  }
-
-  onVideoPage = true;
-
-  const videoInfo = document.querySelector("div #actions-inner");
-  if (videoInfo !== null) {
-    const buttons = videoInfo.getElementsByTagName("button");
-
-    if (buttons != null) {
-      likeButton = buttons[0];
-      dislikeButton = buttons[1];
-      shareButton = buttons[2];
+  // Add event listener to the keys
+  addEventListener("keypress", (event) => {
+    if (!buttons.onVideoPage) {
+      return;
     }
-  } else {
-    likeButton = null;
-    dislikeButton = null;
-    shareButton = null;
-  }
-}
 
-// Call the funcion and set a observer in case the document changes
-findButtons();
-const observer = new MutationObserver(findButtons);
-observer.observe(document.documentElement, { childList: true, subtree: true });
+    const target = event.target as HTMLElement;
 
-// Add event listener to the keys
-addEventListener("keypress", (event) => {
-  if (!onVideoPage) {
-    return;
-  }
+    // On your userpage, return
+    if (target.getAttribute("contenteditable") === "true") {
+      return;
+    }
 
-  const targetElement = event.target as HTMLElement;
+    const tag = target.tagName.toLowerCase();
+    if (tag === "input" || tag === "textarea") {
+      return;
+    }
 
-  // On your userpage, return
-  if (targetElement.getAttribute("contenteditable") === "true") {
-    return;
-  }
-
-  const tag = targetElement.tagName.toLowerCase();
-  if (tag === "input" || tag === "textarea") {
-    return;
-  }
-
-  if (event.code === "BracketLeft" && likeButton) {
-    likeButton.click();
-  } else if (event.code === "BracketRight" && dislikeButton) {
-    dislikeButton.click();
-  } else if (event.code === "Backslash" && shareButton) {
-    getLink(shareButton);
-  }
-});
+    if (event.code === "BracketLeft" && buttons.like) {
+      buttons.like.click();
+    } else if (event.code === "BracketRight" && buttons.dislike) {
+      buttons.dislike.click();
+    } else if (event.code === "Backslash" && buttons.share) {
+      buttons.getShareLink().then((link) => {
+        navigator.clipboard.writeText(link);
+      });
+    }
+  });
+})();
