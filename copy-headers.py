@@ -2,30 +2,30 @@
 import re
 from pathlib import Path
 
-def copy_headers(src: Path, build: Path):
+def copy_headers(src: Path, dest: Path):
     """"Copy the headers from the source file to the output file"""
 
     for file in src.glob("**/*.ts"):
         header = ""
 
-        # Open .ts file and read header
+        # Open `.ts` file and read its header
         with open(file) as f:
             while True:
                 line = f.readline()
-                if line.startswith('//'):
+                if line.startswith("//"):
                     header += line
                 else:
                     break
 
         # Build the header for the .js file in the build dir
         file_name = file.stem + ".js"
-        build_file = build / file_name
+        dest_file = dest / file_name
 
-        with open(build_file, "r+") as f:
+        with open(dest_file, "r+") as f:
             content = f.read()
 
             # Remove header if present
-            re.sub(r"^//.*$\n?", '', content, flags=re.MULTILINE)
+            re.sub(r"^//.*$\n?", "", content, flags=re.MULTILINE)
 
             # Add new header
             f.seek(0)
@@ -34,6 +34,6 @@ def copy_headers(src: Path, build: Path):
 
 if __name__ == "__main__":
     src = Path(__file__).resolve().parent / "src"
-    build = Path(__file__).resolve().parent / "build"
+    dest = Path(__file__).resolve().parent / "build"
 
-    copy_headers(src, build)
+    copy_headers(src, dest)
