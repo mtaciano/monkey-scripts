@@ -3,19 +3,19 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     3.0.0
+// @version     3.0.1
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
 function e(e, t, n, i, r, o, l) {
     try {
-        var s = e[o](l), u = s.value;
+        var s = e[o](l), a = s.value;
     } catch (e) {
         n(e);
         return;
     }
-    s.done ? t(u) : Promise.resolve(u).then(i, r);
+    s.done ? t(a) : Promise.resolve(a).then(i, r);
 }
 function t(t) {
     return function() {
@@ -23,16 +23,24 @@ function t(t) {
         return new Promise(function(r, o) {
             var l = t.apply(n, i);
             function s(t) {
-                e(l, r, o, s, u, "next", t);
+                e(l, r, o, s, a, "next", t);
             }
-            function u(t) {
-                e(l, r, o, s, u, "throw", t);
+            function a(t) {
+                e(l, r, o, s, a, "throw", t);
             }
             s(void 0);
         });
     };
 }
-class n {
+function n(e, t, n) {
+    return t in e ? Object.defineProperty(e, t, {
+        value: n,
+        enumerable: !0,
+        configurable: !0,
+        writable: !0
+    }) : e[t] = n, e;
+}
+class i {
     setFrom(e) {
         /^\/watch/.test(location.pathname) || (this.onVideoPage = !1), this.onVideoPage = !0;
         let t = e.querySelector("div #actions-inner");
@@ -46,23 +54,23 @@ class n {
         return t(function*() {
             if (null === e.share) return "";
             e.share.click();
-            let t = yield i("close-button"), n = yield i("copy-button").then((e)=>e.getElementsByTagName("button")[0]);
+            let t = yield r("close-button"), n = yield r("copy-button").then((e)=>e.getElementsByTagName("button")[0]);
             setTimeout(()=>{
                 n.click(), t.click();
             }, 150);
-            let r = document.getElementById("share-url");
-            return r.value;
+            let i = document.getElementById("share-url");
+            return i.value;
         })();
     }
     constructor(){
-        this.onVideoPage = !1, this.like = null, this.dislike = null, this.share = null;
+        n(this, "onVideoPage", void 0), n(this, "like", void 0), n(this, "dislike", void 0), n(this, "share", void 0), this.onVideoPage = !1, this.like = null, this.dislike = null, this.share = null;
     }
 }
-function i() {
-    return r.apply(this, arguments);
-}
 function r() {
-    return (r = t(function*(e) {
+    return o.apply(this, arguments);
+}
+function o() {
+    return (o = t(function*(e) {
         return new Promise((t)=>{
             let n = document.getElementById(e);
             if (n) {
@@ -89,7 +97,7 @@ function r() {
     })).apply(this, arguments);
 }
 !function() {
-    let e = new n();
+    let e = new i();
     e.setFrom(document);
     let t = new MutationObserver((t)=>{
         e.setFrom(document);
