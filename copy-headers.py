@@ -2,8 +2,9 @@
 import re
 from pathlib import Path
 
+
 def copy_headers(src: Path, dest: Path):
-    """"Copy the headers from the source file to the output file"""
+    """"Copy the headers from the source file (.ts) to the output file (.js)"""
 
     for file in src.glob("**/*.ts"):
         header = ""
@@ -12,10 +13,10 @@ def copy_headers(src: Path, dest: Path):
         with open(file) as f:
             while True:
                 line = f.readline()
-                if line.startswith("//"):
-                    header += line
-                else:
+                if not line.startswith("//"):
                     break
+
+                header += line
 
         # Build the header for the .js file in the build dir
         file_name = file.stem + ".js"

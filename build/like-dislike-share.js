@@ -3,93 +3,97 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     3.0.1
+// @version     3.0.2
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
 // ==/UserScript==
-function e(e, t, n, i, r, o, l) {
+function e(e, t, i, n, r, l, o) {
     try {
-        var s = e[o](l), a = s.value;
+        var s = e[l](o), u = s.value;
     } catch (e) {
-        n(e);
+        i(e);
         return;
     }
-    s.done ? t(a) : Promise.resolve(a).then(i, r);
+    s.done ? t(u) : Promise.resolve(u).then(n, r);
 }
 function t(t) {
     return function() {
-        var n = this, i = arguments;
-        return new Promise(function(r, o) {
-            var l = t.apply(n, i);
+        var i = this, n = arguments;
+        return new Promise(function(r, l) {
+            var o = t.apply(i, n);
             function s(t) {
-                e(l, r, o, s, a, "next", t);
+                e(o, r, l, s, u, "next", t);
             }
-            function a(t) {
-                e(l, r, o, s, a, "throw", t);
+            function u(t) {
+                e(o, r, l, s, u, "throw", t);
             }
             s(void 0);
         });
     };
 }
-function n(e, t, n) {
+function i(e, t, i) {
     return t in e ? Object.defineProperty(e, t, {
-        value: n,
+        value: i,
         enumerable: !0,
         configurable: !0,
         writable: !0
-    }) : e[t] = n, e;
+    }) : e[t] = i, e;
 }
-class i {
-    setFrom(e) {
-        /^\/watch/.test(location.pathname) || (this.onVideoPage = !1), this.onVideoPage = !0;
+class n {
+    from(e) {
+        if (!/^\/watch/.test(location.pathname)) {
+            this.onVideoPage = !1, this.like = null, this.dislike = null, this.share = null;
+            return;
+        }
+        this.onVideoPage = !0;
         let t = e.querySelector("div #actions-inner");
         if (null !== t) {
             let e = t.getElementsByTagName("button");
             e.length >= 3 && (this.like = e[0], this.dislike = e[1], this.share = e[2]);
         }
     }
-    getShareLink() {
+    shareLink() {
         var e = this;
         return t(function*() {
             if (null === e.share) return "";
             e.share.click();
-            let t = yield r("close-button"), n = yield r("copy-button").then((e)=>e.getElementsByTagName("button")[0]);
+            let t = yield r("close-button"), i = yield r("copy-button").then((e)=>e.getElementsByTagName("button")[0]);
             setTimeout(()=>{
-                n.click(), t.click();
-            }, 150);
-            let i = document.getElementById("share-url");
-            return i.value;
+                i.click(), t.click();
+            }, 200);
+            let n = document.getElementById("share-url");
+            return n.value;
         })();
     }
     constructor(){
-        n(this, "onVideoPage", void 0), n(this, "like", void 0), n(this, "dislike", void 0), n(this, "share", void 0), this.onVideoPage = !1, this.like = null, this.dislike = null, this.share = null;
+        i(this, "onVideoPage", void 0), i(this, "like", void 0), i(this, "dislike", void 0), i(this, "share", void 0), this.onVideoPage = !1, this.like = null, this.dislike = null, this.share = null;
     }
 }
 function r() {
-    return o.apply(this, arguments);
+    return l.apply(this, arguments);
 }
-function o() {
-    return (o = t(function*(e) {
+function l() {
+    return (l = t(function*(e) {
         return new Promise((t)=>{
-            let n = document.getElementById(e);
-            if (n) {
-                t(n);
+            let i = document.getElementById(e);
+            if (null !== i) {
+                t(i);
                 return;
             }
-            let i = new MutationObserver((n)=>{
-                n.forEach((n)=>{
-                    let r = Array.from(n.addedNodes).find((t)=>{
-                        var n;
-                        return t.id === e || (null === (n = t.parentElement) || void 0 === n ? void 0 : n.id) === e;
+            let n = new MutationObserver((i)=>{
+                i.forEach((i)=>{
+                    let r = Array.from(i.addedNodes).find((t)=>{
+                        var i;
+                        return t.id === e || (null === (i = t.parentElement) || void 0 === i ? void 0 : i.id) === e;
                     });
                     if (r) {
-                        t(r), i.disconnect();
+                        t(r), n.disconnect();
                         return;
                     }
                 });
             });
-            i.observe(document.body, {
+            n.observe(document.body, {
                 childList: !0,
                 subtree: !0
             });
@@ -97,20 +101,20 @@ function o() {
     })).apply(this, arguments);
 }
 !function() {
-    let e = new i();
-    e.setFrom(document);
+    let e = new n();
+    e.from(document);
     let t = new MutationObserver((t)=>{
-        e.setFrom(document);
+        e.from(document);
     });
     t.observe(document.documentElement, {
         childList: !0,
         subtree: !0
     }), addEventListener("keypress", (t)=>{
         if (!e.onVideoPage) return;
-        let n = t.target;
-        if ("true" === n.getAttribute("contenteditable")) return;
-        let i = n.tagName.toLowerCase();
-        "input" !== i && "textarea" !== i && ("BracketLeft" === t.code && e.like ? e.like.click() : "BracketRight" === t.code && e.dislike ? e.dislike.click() : "Backslash" === t.code && e.share && e.getShareLink().then((e)=>{
+        let i = t.target;
+        if ("true" === i.getAttribute("contenteditable")) return;
+        let n = i.tagName.toLowerCase();
+        "input" !== n && "textarea" !== n && ("BracketLeft" === t.code && e.like ? e.like.click() : "BracketRight" === t.code && e.dislike ? e.dislike.click() : "Backslash" === t.code && e.share && e.shareLink().then((e)=>{
             navigator.clipboard.writeText(e);
         }));
     });

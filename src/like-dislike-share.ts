@@ -3,7 +3,7 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     3.0.1
+// @version     3.0.2
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
@@ -23,10 +23,14 @@ class Buttons {
     this.share = null;
   }
 
-  setFrom(root: ParentNode) {
+  from(root: ParentNode) {
     // Test if we are in a valid page
     if (!/^\/watch/.test(location.pathname)) {
       this.onVideoPage = false;
+      this.like = null;
+      this.dislike = null;
+      this.share = null;
+      return;
     }
 
     // We are, proceed
@@ -44,29 +48,27 @@ class Buttons {
     }
   }
 
-  async getShareLink(): Promise<string> {
-      if (this.share === null) {
-        return "";
-      }
+  async shareLink(): Promise<string> {
+    if (this.share === null) {
+      return "";
+    }
 
-      // Open popup to create the shareable link
-      this.share.click();
+    this.share.click();
 
-      // Get the button to close the popup and copy the link
-      const close = await awaitElementById("close-button");
-      const copy = await awaitElementById("copy-button").then(
-        (elem) => elem.getElementsByTagName("button")[0]
-      );
+    const close = await awaitElementById("close-button");
+    const copy = await awaitElementById("copy-button").then(
+      (elem) => elem.getElementsByTagName("button")[0],
+    );
 
-      // Force the link generation
-      setTimeout(() => {
-        copy.click();
-        close.click();
-      }, 150);
+    // Force the link generation
+    // This is a workaround since youtube takes some time to load the popup
+    setTimeout(() => {
+      copy.click();
+      close.click();
+    }, 200);
 
-      // Return the link value
-      const url = document.getElementById("share-url") as HTMLInputElement;
-      return url.value;
+    const url = document.getElementById("share-url") as HTMLInputElement;
+    return url.value;
   }
 }
 
@@ -76,7 +78,7 @@ async function awaitElementById(selector: string): Promise<HTMLElement> {
     const elem = document.getElementById(selector);
 
     // Already exists
-    if (elem) {
+    if (elem !== null) {
       resolve(elem);
       return;
     }
@@ -87,9 +89,9 @@ async function awaitElementById(selector: string): Promise<HTMLElement> {
         const elem = Array.from(mutation.addedNodes).find((node) => {
           const elem = node as Element;
 
-          // NOTE: Should return _true_ if its parent is the chosen one.
+          // NOTE: Should return _true_ if its parent is the element we want.
           // This is because while testing only the children where visible
-          // when searching for the `copy-button`, so this is a workaround
+          // when searching for the `copy-button`, so this is a workaround.
           return elem.id === selector || elem.parentElement?.id === selector;
         }) as HTMLElement;
 
@@ -108,15 +110,15 @@ async function awaitElementById(selector: string): Promise<HTMLElement> {
   });
 }
 
-// Main IIFE
+// Main
 (function () {
   let buttons = new Buttons();
 
   // Set the buttons and create an observer in case the document changes
-  buttons.setFrom(document);
+  buttons.from(document);
   const button_observer = new MutationObserver((_) => {
     // Try to set the buttons everytime a change occurs
-    buttons.setFrom(document);
+    buttons.from(document);
   });
   button_observer.observe(document.documentElement, {
     childList: true,
@@ -146,7 +148,7 @@ async function awaitElementById(selector: string): Promise<HTMLElement> {
     } else if (event.code === "BracketRight" && buttons.dislike) {
       buttons.dislike.click();
     } else if (event.code === "Backslash" && buttons.share) {
-      buttons.getShareLink().then((link) => {
+      buttons.shareLink().then((link) => {
         navigator.clipboard.writeText(link);
       });
     }
