@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def copy_headers(src: Path, dest: Path):
-    """"Copy the headers from the source file (.ts) to the output file (.js)"""
+    """Copy the headers from the source file (.ts) to the output file (.js)"""
 
     for file in src.glob("**/*.ts"):
         header = ""

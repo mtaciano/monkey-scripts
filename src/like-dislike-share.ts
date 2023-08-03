@@ -3,7 +3,7 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     3.0.2
+// @version     3.0.3
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
@@ -63,9 +63,9 @@ class Buttons {
     // Force the link generation
     // This is a workaround since youtube takes some time to load the popup
     setTimeout(() => {
-      copy.click();
       close.click();
-    }, 200);
+      copy.click();
+    }, 250);
 
     const url = document.getElementById("share-url") as HTMLInputElement;
     return url.value;
