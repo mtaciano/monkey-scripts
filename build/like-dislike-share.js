@@ -3,7 +3,7 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     3.0.3
+// @version     3.1.0
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
@@ -253,34 +253,41 @@ function awaitElementById(selector) {
 function _awaitElementById() {
     _awaitElementById = _async_to_generator(function(selector) {
         return _ts_generator(this, function(_state) {
-            return [
-                2,
-                new Promise(function(resolve) {
-                    var elem = document.getElementById(selector);
-                    if (elem !== null) {
-                        resolve(elem);
-                        return;
-                    }
-                    var observer = new MutationObserver(function(mutations) {
-                        mutations.forEach(function(mutation) {
-                            var elem = Array.from(mutation.addedNodes).find(function(node) {
-                                var _elem_parentElement;
-                                var elem = node;
-                                return elem.id === selector || ((_elem_parentElement = elem.parentElement) === null || _elem_parentElement === void 0 ? void 0 : _elem_parentElement.id) === selector;
-                            });
-                            if (elem) {
+            switch(_state.label){
+                case 0:
+                    return [
+                        4,
+                        new Promise(function(resolve) {
+                            var elem = document.getElementById(selector);
+                            if (elem !== null) {
                                 resolve(elem);
-                                observer.disconnect();
                                 return;
                             }
-                        });
-                    });
-                    observer.observe(document.body, {
-                        childList: true,
-                        subtree: true
-                    });
-                })
-            ];
+                            var observer = new MutationObserver(function(mutations) {
+                                mutations.forEach(function(mutation) {
+                                    var elem = Array.from(mutation.addedNodes).find(function(node) {
+                                        var _elem_parentElement;
+                                        var elem = node;
+                                        return elem.id === selector || ((_elem_parentElement = elem.parentElement) === null || _elem_parentElement === void 0 ? void 0 : _elem_parentElement.id) === selector;
+                                    });
+                                    if (elem !== null) {
+                                        resolve(elem);
+                                        observer.disconnect();
+                                    }
+                                });
+                            });
+                            observer.observe(document.body, {
+                                childList: true,
+                                subtree: true
+                            });
+                        })
+                    ];
+                case 1:
+                    return [
+                        2,
+                        _state.sent()
+                    ];
+            }
         });
     });
     return _awaitElementById.apply(this, arguments);
@@ -288,10 +295,10 @@ function _awaitElementById() {
 (function() {
     var buttons = new Buttons();
     buttons.from(document);
-    var button_observer = new MutationObserver(function(_) {
+    var buttonObserver = new MutationObserver(function(_) {
         buttons.from(document);
     });
-    button_observer.observe(document.documentElement, {
+    buttonObserver.observe(document.documentElement, {
         childList: true,
         subtree: true
     });
@@ -307,13 +314,15 @@ function _awaitElementById() {
         if (tag === "input" || tag === "textarea") {
             return;
         }
-        if (event.code === "BracketLeft" && buttons.like) {
+        if (event.code === "BracketLeft" && buttons.like !== null) {
             buttons.like.click();
-        } else if (event.code === "BracketRight" && buttons.dislike) {
+        } else if (event.code === "BracketRight" && buttons.dislike !== null) {
             buttons.dislike.click();
-        } else if (event.code === "Backslash" && buttons.share) {
+        } else if (event.code === "Backslash" && buttons.share !== null) {
             buttons.shareLink().then(function(link) {
-                navigator.clipboard.writeText(link);
+                navigator.clipboard.writeText(link).catch(function(err) {
+                    console.log(err);
+                });
             });
         }
     });

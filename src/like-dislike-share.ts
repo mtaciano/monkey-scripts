@@ -3,7 +3,7 @@
 // @namespace   https://github.com/mtaciano
 // @match       https://www.youtube.com/*
 // @description "[" likes; "]" dislikes; "\" gets the current video link
-// @version     3.0.3
+// @version     3.1.0
 // @downloadURL https://raw.githubusercontent.com/mtaciano/monkey-scripts/main/build/like-dislike-share.js
 // @homepageURL https://github.com/mtaciano/monkey-scripts/
 // @grant       none
@@ -23,7 +23,7 @@ class Buttons {
     this.share = null;
   }
 
-  from(root: ParentNode) {
+  from(root: ParentNode): void {
     // Test if we are in a valid page
     if (!/^\/watch/.test(location.pathname)) {
       this.onVideoPage = false;
@@ -74,7 +74,7 @@ class Buttons {
 
 // Create a promise to wait for an element
 async function awaitElementById(selector: string): Promise<HTMLElement> {
-  return new Promise((resolve) => {
+  return await new Promise((resolve) => {
     const elem = document.getElementById(selector);
 
     // Already exists
@@ -93,12 +93,11 @@ async function awaitElementById(selector: string): Promise<HTMLElement> {
           // This is because while testing only the children where visible
           // when searching for the `copy-button`, so this is a workaround.
           return elem.id === selector || elem.parentElement?.id === selector;
-        }) as HTMLElement;
+        });
 
-        if (elem) {
-          resolve(elem);
+        if (elem !== null) {
+          resolve(elem as HTMLElement);
           observer.disconnect();
-          return;
         }
       });
     });
@@ -112,15 +111,15 @@ async function awaitElementById(selector: string): Promise<HTMLElement> {
 
 // Main
 (function () {
-  let buttons = new Buttons();
+  const buttons = new Buttons();
 
   // Set the buttons and create an observer in case the document changes
   buttons.from(document);
-  const button_observer = new MutationObserver((_) => {
+  const buttonObserver = new MutationObserver((_) => {
     // Try to set the buttons everytime a change occurs
     buttons.from(document);
   });
-  button_observer.observe(document.documentElement, {
+  buttonObserver.observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
@@ -143,13 +142,15 @@ async function awaitElementById(selector: string): Promise<HTMLElement> {
       return;
     }
 
-    if (event.code === "BracketLeft" && buttons.like) {
+    if (event.code === "BracketLeft" && buttons.like !== null) {
       buttons.like.click();
-    } else if (event.code === "BracketRight" && buttons.dislike) {
+    } else if (event.code === "BracketRight" && buttons.dislike !== null) {
       buttons.dislike.click();
-    } else if (event.code === "Backslash" && buttons.share) {
+    } else if (event.code === "Backslash" && buttons.share !== null) {
       buttons.shareLink().then((link) => {
-        navigator.clipboard.writeText(link);
+        navigator.clipboard.writeText(link).catch((err) => {
+          console.log(err);
+        });
       });
     }
   });
