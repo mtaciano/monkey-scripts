@@ -1,8 +1,2 @@
 # npm artifacts
 node_modules/
-
-# We do not include build files here
-# That's because these files are the scripts
-
-# Configurations
-.vscode/
