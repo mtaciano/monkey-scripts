@@ -2,9 +2,6 @@
   "name": "monkey-scripts",
   "version": "0.2.0",
   "description": "A collection of grease/tamper/violent-monkey scripts.",
-  "scripts": {
-    "build": "tsc --noEmit && swc src -d build && ./copy-headers.py"
-  },
   "keywords": [
     "scripts",
     "extension",
