@@ -1,5 +1,5 @@
 # Monkey Scripts
-A collection of tamper/violent-monkey scripts.
+A collection of grease/tamper/violent-monkey scripts.
 
 # Purpose
 Create useful scripts for different websites and purposes.
