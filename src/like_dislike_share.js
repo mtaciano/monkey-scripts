@@ -12,8 +12,8 @@
 /**
  * Test if the current URI is a video page, meaning it cointains the word
  * `watch` somewhere inside it
- * @param {string} uri
- * @returns {boolean}
+ * @param {string} uri - The URI to be tested
+ * @returns {boolean} - If the URI is from a video page
  */
 function isOnVideoPage(uri) {
   return /^\/watch/.test(uri);
@@ -22,8 +22,8 @@ function isOnVideoPage(uri) {
 /**
  * Return an element if it exists. But if not, wait for it to be created and
  * then return it
- * @param {string} selector
- * @returns {Promise<HTMLElement>}
+ * @param {string} selector - ID of the element to be searched
+ * @returns {Promise<HTMLElement>} - A promise containing the element
  */
 async function awaitElementById(selector) {
   return await new Promise((resolve) => {
@@ -68,8 +68,8 @@ async function awaitElementById(selector) {
 /**
  * Create all the buttons from a parent node, if we can't create
  * valid buttons, we simply return null for them
- * @param {ParentNode} node
- * @returns {Array<HTMLButtonElement|null>}
+ * @param {ParentNode} node - Parent node used for finding the buttons
+ * @returns {Array<HTMLButtonElement|null>} - The buttons if they exist
  */
 function buttonsFromNode(node) {
   if (!isOnVideoPage(/** @type {Document} */ (node).location.pathname)) {
@@ -95,12 +95,12 @@ function buttonsFromNode(node) {
 
 /**
  * Return the URI for the current video page. We use an `async` function
- * here because, even if we could just copy the URI directily, when you
+ * here because, even if we could just copy the URI directly, when you
  * click the button yourself, a popup with the text
  * `Link copied to clipboard` appears. We want to recreate this effect
  * but didn't find any better way to.
- * @param {HTMLButtonElement} button
- * @returns {Promise<string>}
+ * @param {HTMLButtonElement} button - Button to be clicked
+ * @returns {Promise<string>} - Promise with the link for the video
  */
 async function shareLink(button) {
   button.click();
@@ -123,8 +123,8 @@ async function shareLink(button) {
  * Perform a click on the given button. We use a pseudo-strategy pattern
  * here as to simplify implementation may we add more buttons in the
  * future
- * @param {string} tag
- * @param {HTMLButtonElement|null} button
+ * @param {string} tag - What type of button it is
+ * @param {HTMLButtonElement|null} button - Button, if it exists
  * @returns {void}
  */
 function clickButton(tag, button) {
