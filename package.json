@@ -10,6 +10,6 @@
   "author": "mtaciano",
   "license": "MIT",
   "devDependencies": {
-    "jsdoc": "~4.0.2"
+    "jsdoc": "~4.0.3"
   }
 }
